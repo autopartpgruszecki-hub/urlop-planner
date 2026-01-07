@@ -3,56 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planer Urlopowy 2026 - Polska</title>
+    <title>Planer Urlopowy 2026/2027</title>
     <style>
         :root {
             --bg: #f1f5f9;
             --card: #ffffff;
-            --primary: #3b82f6;
+            --primary: #2563eb;
             --wypoczynkowy: #10b981;
             --chorobowy: #ef4444;
             --zadanie: #f59e0b;
-            --okolicznosciowy: #8b5cf6;
+            --sila-wyzsza: #6366f1;
+            --opieka-dziecko: #ec4899;
+            --krew: #991b1b; /* Ciemnoczerwony dla krwiodawstwa */
             --swieto: #e2e8f0;
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         
-        .calendar-container { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; max-width: 1200px; }
+        .calendar-container { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; }
+        .month { background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; height: fit-content; }
+        .month-title { text-align: center; font-weight: bold; margin-bottom: 12px; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; text-transform: capitalize; }
         
-        .month { background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        .month-title { text-align: center; font-weight: 800; margin-bottom: 12px; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-        
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .day-name { font-size: 0.7em; text-align: center; font-weight: bold; color: #94a3b8; padding-bottom: 5px; }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-name { font-size: 0.75em; text-align: center; font-weight: bold; color: #94a3b8; padding-bottom: 5px; }
         
         .day { 
             aspect-ratio: 1; display: flex; align-items: center; justify-content: center; 
-            font-size: 0.85em; border-radius: 6px; cursor: pointer; border: 1px solid #f1f5f9; transition: all 0.2s;
+            font-size: 0.9em; border-radius: 6px; cursor: pointer; border: 1px solid #f8fafc; transition: all 0.2s;
+            min-height: 38px; background: #fff;
         }
-        .day:hover { background: #cbd5e1; transform: scale(1.1); z-index: 10; }
-        .day.empty { border: none; cursor: default; }
+        .day:hover:not(.empty):not(.is-locked) { background: #eff6ff; transform: scale(1.1); z-index: 10; border-color: var(--primary); }
+        .day.empty { border: none; cursor: default; background: transparent; }
 
-        /* Statusy */
+        /* Style statusów */
         .status-wypoczynkowy { background: var(--wypoczynkowy) !important; color: white; border: none; }
-        .status-l4 { background: var(--chorobowy) !important; color: white; border: none; }
-        .status-zadanie { background: var(--zadanie) !important; color: white; border: none; }
-        .status-okolicznosciowy { background: var(--okolicznosciowy) !important; color: white; border: none; }
+        .status-l4 { background: var(--chorobowy) !important; color: white; }
+        .status-zadanie { background: var(--zadanie) !important; color: white; }
+        .status-sila-wyzsza { background: var(--sila-wyzsza) !important; color: white; }
+        .status-opieka-dziecko { background: var(--opieka-dziecko) !important; color: white; }
+        .status-krew { background: var(--krew) !important; color: white; }
         
+        .is-locked { cursor: not-allowed; }
         .is-holiday { background: var(--swieto) !important; color: #ef4444; border: 1px solid #fca5a5; font-weight: bold; }
+        .is-weekend { background: #f8fafc; color: #94a3b8; }
 
-        /* Panel */
-        .sidebar { width: 320px; background: var(--card); padding: 25px; border-radius: 12px; position: sticky; top: 20px; height: fit-content; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        
-        h2 { margin-top: 0; font-size: 1.2em; color: #0f172a; }
-        select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
-        .btn-save { width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; }
-        
-        .info-holiday { color: #ef4444; font-size: 0.9em; font-weight: bold; margin: 10px 0; display: none; }
+        /* Sidebar */
+        .sidebar { width: 340px; background: var(--card); padding: 25px; border-radius: 12px; position: sticky; top: 20px; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .limit-box { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; text-align: center; }
+        .remaining { font-size: 2em; font-weight: 800; color: var(--primary); }
 
-        .legend { margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85em; color: #475569; }
-        .dot { width: 14px; height: 14px; border-radius: 4px; }
+        .type-option { 
+            display: flex; align-items: center; padding: 10px; margin-bottom: 6px; 
+            border: 2px solid #f1f5f9; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 0.9em;
+        }
+        .type-option.active { border-color: var(--primary); background: #eff6ff; font-weight: 600; }
+        .color-dot { width: 14px; height: 14px; border-radius: 4px; margin-right: 12px; }
+        
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; }
+        .btn-excel { background: #166534; }
+        .btn-clear { background: #ef4444; }
+
+        .stats-summary { margin-top: 15px; font-size: 0.85em; color: #475569; border-top: 1px solid #f1f5f9; padding-top: 10px; }
     </style>
 </head>
 <body>
@@ -60,142 +72,162 @@
 <div class="calendar-container" id="calendar"></div>
 
 <div class="sidebar">
-    <h2>📅 Szczegóły dnia</h2>
-    <div id="selected-date-label" style="font-weight: bold; color: var(--primary); margin-bottom: 10px;">Wybierz datę z kalendarza</div>
+    <h2 style="margin-top:0">📅 Planer 2026-27</h2>
     
-    <div id="holiday-name" class="info-holiday"></div>
-
-    <div id="editor-ui">
-        <label>Typ urlopu:</label>
-        <select id="leave-type">
-            <option value="">Pracujący / Brak</option>
-            <option value="wypoczynkowy">Urlop wypoczynkowy</option>
-            <option value="l4">Zwolnienie lekarskie (L4)</option>
-            <option value="zadanie">Urlop na żądanie</option>
-            <option value="okolicznosciowy">Urlop okolicznościowy</option>
-        </select>
-        
-        <label>Twoje uwagi:</label>
-        <textarea id="notes" rows="3" placeholder="Gdzie jedziesz? Co robisz?"></textarea>
-        <button class="btn-save" onclick="saveDay()">Zapisz w kalendarzu</button>
+    <div class="limit-box">
+        Pula dni urlopu: <input type="number" id="annual-limit" value="26" style="width:60px; text-align:center; font-size: 1.1em;" onchange="updateStats()">
+        <div style="font-size: 0.85em; color: #64748b; margin-top:8px">Zostało urlopu:</div>
+        <div class="remaining" id="days-left">26</div>
     </div>
 
-    <div class="legend">
-        <div class="legend-item"><div class="dot" style="background: var(--swieto); border: 1px solid #fca5a5;"></div> Święto ustawowe (Wolne!)</div>
-        <div class="legend-item"><div class="dot" style="background: var(--wypoczynkowy)"></div> Wypoczynkowy</div>
-        <div class="legend-item"><div class="dot" style="background: var(--chorobowy)"></div> L4 / Chorobowe</div>
-        <div class="legend-item"><div class="dot" style="background: var(--zadanie)"></div> Na żądanie</div>
+    <div id="selector-group">
+        <div class="type-option active" data-type="wypoczynkowy"><div class="color-dot" style="background: var(--wypoczynkowy)"></div>Wypoczynkowy</div>
+        <div class="type-option" data-type="zadanie"><div class="color-dot" style="background: var(--zadanie)"></div>Na żądanie</div>
+        <div class="type-option" data-type="sila-wyzsza"><div class="color-dot" style="background: var(--sila-wyzsza)"></div>Siła wyższa (2/rok)</div>
+        <div class="type-option" data-type="opieka-dziecko"><div class="color-dot" style="background: var(--opieka-dziecko)"></div>Opieka (2/rok)</div>
+        <div class="type-option" data-type="krew"><div class="color-dot" style="background: var(--krew)"></div>Krwiodawstwo (2 dni)</div>
+        <div class="type-option" data-type="l4"><div class="color-dot" style="background: var(--chorobowy)"></div>Chorobowe (L4)</div>
+        <div class="type-option" data-type="clear"><div class="color-dot" style="background: #fff; border: 1px solid #ddd;"></div>Wyczyść</div>
+    </div>
+
+    <div class="stats-summary">
+        Wykorzystane dni (inne niż urlop):<br>
+        🩸 Krwiodawstwo: <span id="stat-krew">0</span> dni<br>
+        👶 Opieka: <span id="stat-opieka">0</span>/2<br>
+        🌩️ Siła wyższa: <span id="stat-sila">0</span>/2
+    </div>
+
+    <div class="action-btns">
+        <button class="btn btn-excel" onclick="exportToExcel()">Excel</button>
+        <button class="btn btn-clear" onclick="clearAll()">Reset</button>
     </div>
 </div>
 
 <script>
-    const year = 2026;
-    
-    // Lista świąt w Polsce 2026
-    const holidays2026 = {
-        "2026-01-01": "Nowy Rok",
-        "2026-01-06": "Trzech Króli",
-        "2026-04-05": "Wielkanoc",
-        "2026-04-06": "Poniedziałek Wielkanocny",
-        "2026-05-01": "Święto Pracy",
-        "2026-05-03": "Święto Konstytucji 3 Maja",
-        "2026-05-24": "Zielone Świątki",
-        "2026-06-04": "Boże Ciało",
-        "2026-08-15": "Wniebowzięcie NMP",
-        "2026-11-01": "Wszystkich Świętych",
-        "2026-11-11": "Święto Niepodległości",
-        "2026-12-25": "Boże Narodzenie (Dzień 1)",
-        "2026-12-26": "Boże Narodzenie (Dzień 2)"
+    const holidays = {
+        "2026-01-01": "Nowy Rok", "2026-01-06": "Trzech Króli", "2026-04-05": "Wielkanoc",
+        "2026-04-06": "Poniedziałek Wielkanocny", "2026-05-01": "Święto Pracy",
+        "2026-05-03": "Święto Konstytucji", "2026-06-04": "Boże Ciało",
+        "2026-08-15": "Wniebowzięcie", "2026-11-01": "Wszystkich Świętych",
+        "2026-11-11": "Niepodległości", "2026-12-24": "Wigilia",
+        "2026-12-25": "Boże Narodzenie", "2026-12-26": "Boże Narodzenie",
+        "2027-01-01": "Nowy Rok", "2027-01-06": "Trzech Króli"
     };
 
-    let calendarData = JSON.parse(localStorage.getItem('pl_planner_2026')) || {};
-    let currentSelectedDate = null;
+    let calendarData = JSON.parse(localStorage.getItem('planner_data_v5')) || {};
+    let activeType = 'wypoczynkowy';
 
-    const months = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
-    const dayNames = ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"];
+    document.querySelectorAll('.type-option').forEach(opt => {
+        opt.onclick = () => {
+            document.querySelectorAll('.type-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            activeType = opt.dataset.type;
+        };
+    });
 
     function initCalendar() {
         const container = document.getElementById('calendar');
         container.innerHTML = '';
+        const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
-        for (let m = 0; m < 12; m++) {
+        for (let i = 0; i < 13; i++) {
+            const currentYear = i < 12 ? 2026 : 2027;
+            const m = i % 12;
             const monthDiv = document.createElement('div');
             monthDiv.className = 'month';
-            monthDiv.innerHTML = `<div class="month-title">${months[m]}</div>`;
-            
+            monthDiv.innerHTML = `<div class="month-title">${monthNames[m]} ${currentYear}</div>`;
             const grid = document.createElement('div');
             grid.className = 'days-grid';
-            dayNames.forEach(name => grid.innerHTML += `<div class="day-name">${name}</div>`);
+            
+            ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].forEach(name => {
+                const dayName = document.createElement('div');
+                dayName.className = 'day-name';
+                dayName.innerText = name;
+                grid.appendChild(dayName);
+            });
 
-            const firstDay = new Date(year, m, 1).getDay();
-            const daysInMonth = new Date(year, m + 1, 0).getDate();
-            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            const firstDay = new Date(currentYear, m, 1).getDay();
+            const offset = (firstDay === 0 ? 6 : firstDay - 1);
+            for (let j = 0; j < offset; j++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'day empty';
+                grid.appendChild(emptyDiv);
+            }
 
-            for (let i = 0; i < startOffset; i++) grid.innerHTML += `<div class="day empty"></div>`;
-
+            const daysInMonth = new Date(currentYear, m + 1, 0).getDate();
             for (let d = 1; d <= daysInMonth; d++) {
-                const dateKey = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dateKey = `${currentYear}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dateObj = new Date(currentYear, m, d);
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
                 dayDiv.innerText = d;
-                dayDiv.id = `day-${dateKey}`;
                 
-                if (holidays2026[dateKey]) {
-                    dayDiv.classList.add('is-holiday');
-                } else if (calendarData[dateKey]) {
-                    dayDiv.classList.add(`status-${calendarData[dateKey].type}`);
-                }
+                const dayOfWeek = dateObj.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const holidayName = holidays[dateKey];
 
-                dayDiv.onclick = () => selectDay(dateKey);
+                if (holidayName) {
+                    dayDiv.classList.add('is-holiday', 'is-locked');
+                    dayDiv.title = holidayName;
+                } else if (isWeekend) {
+                    dayDiv.classList.add('is-weekend', 'is-locked');
+                } else {
+                    if (calendarData[dateKey]) dayDiv.classList.add(`status-${calendarData[dateKey]}`);
+                    dayDiv.addEventListener('click', () => handleDayClick(dateKey));
+                }
                 grid.appendChild(dayDiv);
             }
             monthDiv.appendChild(grid);
             container.appendChild(monthDiv);
         }
+        updateStats();
     }
 
-    function selectDay(date) {
-        currentSelectedDate = date;
-        const holidayName = holidays2026[date];
-        const displayLabel = document.getElementById('selected-date-label');
-        const holidayInfo = document.getElementById('holiday-name');
-        const editorUI = document.getElementById('editor-ui');
-
-        displayLabel.innerText = `Data: ${date}`;
-        
-        if (holidayName) {
-            holidayInfo.innerText = `🎉 To święto: ${holidayName} (Wolne ustawowo)`;
-            holidayInfo.style.display = 'block';
-            editorUI.style.display = 'none'; // Ukryj edycję dla świąt
+    function handleDayClick(dateKey) {
+        if (activeType === 'clear') {
+            delete calendarData[dateKey];
         } else {
-            holidayInfo.style.display = 'none';
-            editorUI.style.display = 'block';
-            const data = calendarData[date] || { type: '', notes: '' };
-            document.getElementById('leave-type').value = data.type;
-            document.getElementById('notes').value = data.notes;
+            const counts = Object.values(calendarData).reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {});
+            if ((activeType === 'sila-wyzsza' || activeType === 'opieka-dziecko') && (counts[activeType] || 0) >= 2 && calendarData[dateKey] !== activeType) {
+                alert("Limit 2 dni wykorzystany!"); return;
+            }
+            calendarData[dateKey] = activeType;
         }
-        
-        document.querySelectorAll('.day').forEach(el => el.style.boxShadow = 'none');
-        document.getElementById(`day-${date}`).style.boxShadow = '0 0 0 3px var(--primary)';
-    }
-
-    function saveDay() {
-        if (!currentSelectedDate) return;
-        const type = document.getElementById('leave-type').value;
-        const notes = document.getElementById('notes').value;
-
-        if (type === "") {
-            delete calendarData[currentSelectedDate];
-        } else {
-            calendarData[currentSelectedDate] = { type, notes };
-        }
-
-        localStorage.setItem('pl_planner_2026', JSON.stringify(calendarData));
+        localStorage.setItem('planner_data_v5', JSON.stringify(calendarData));
         initCalendar();
+    }
+
+    function updateStats() {
+        const counts = { wypoczynkowy: 0, zadanie: 0, krew: 0, 'sila-wyzsza': 0, 'opieka-dziecko': 0 };
+        Object.values(calendarData).forEach(type => { if(counts[type] !== undefined) counts[type]++; });
+        
+        const limit = parseInt(document.getElementById('annual-limit').value) || 0;
+        document.getElementById('days-left').innerText = limit - (counts.wypoczynkowy + counts.zadanie);
+        
+        document.getElementById('stat-krew').innerText = counts.krew;
+        document.getElementById('stat-opieka').innerText = counts['opieka-dziecko'];
+        document.getElementById('stat-sila').innerText = counts['sila-wyzsza'];
+    }
+
+    function exportToExcel() {
+        let csv = "\uFEFFData;Typ Urlopu\n";
+        Object.keys(calendarData).sort().forEach(k => csv += `${k};${calendarData[k]}\n`);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = 'plan_urlopowy_2026_27.csv';
+        link.click();
+    }
+
+    function clearAll() {
+        if(confirm("Wyczyścić wszystko?")) { 
+            calendarData = {}; 
+            localStorage.removeItem('planner_data_v5'); 
+            initCalendar(); 
+        }
     }
 
     initCalendar();
 </script>
-
 </body>
 </html>
