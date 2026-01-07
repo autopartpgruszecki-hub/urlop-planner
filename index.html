@@ -3,181 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mój Planer Urlopowy</title>
+    <title>Planer Urlopowy 2026 - Polska</title>
     <style>
         :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
+            --bg: #f1f5f9;
             --card: #ffffff;
-            --text: #1e293b;
-            --accent: #10b981;
+            --primary: #3b82f6;
+            --wypoczynkowy: #10b981;
+            --chorobowy: #ef4444;
+            --zadanie: #f59e0b;
+            --okolicznosciowy: #8b5cf6;
+            --swieto: #e2e8f0;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        
+        .calendar-container { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; max-width: 1200px; }
+        
+        .month { background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .month-title { text-align: center; font-weight: 800; margin-bottom: 12px; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+        
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day-name { font-size: 0.7em; text-align: center; font-weight: bold; color: #94a3b8; padding-bottom: 5px; }
+        
+        .day { 
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center; 
+            font-size: 0.85em; border-radius: 6px; cursor: pointer; border: 1px solid #f1f5f9; transition: all 0.2s;
         }
+        .day:hover { background: #cbd5e1; transform: scale(1.1); z-index: 10; }
+        .day.empty { border: none; cursor: default; }
 
-        .container {
-            max-width: 800px;
-            width: 100%;
-        }
+        /* Statusy */
+        .status-wypoczynkowy { background: var(--wypoczynkowy) !important; color: white; border: none; }
+        .status-l4 { background: var(--chorobowy) !important; color: white; border: none; }
+        .status-zadanie { background: var(--zadanie) !important; color: white; border: none; }
+        .status-okolicznosciowy { background: var(--okolicznosciowy) !important; color: white; border: none; }
+        
+        .is-holiday { background: var(--swieto) !important; color: #ef4444; border: 1px solid #fca5a5; font-weight: bold; }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        /* Panel */
+        .sidebar { width: 320px; background: var(--card); padding: 25px; border-radius: 12px; position: sticky; top: 20px; height: fit-content; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        
+        h2 { margin-top: 0; font-size: 1.2em; color: #0f172a; }
+        select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+        .btn-save { width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+        
+        .info-holiday { color: #ef4444; font-size: 0.9em; font-weight: bold; margin: 10px 0; display: none; }
 
-        .card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        h2 { border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
-
-        .input-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        input, textarea {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        button:hover { opacity: 0.9; }
-
-        .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .delete-btn { background-color: #ef4444; padding: 5px 10px; }
-
-        .todo-item { display: flex; align-items: center; gap: 10px; }
-        .completed { text-decoration: line-through; opacity: 0.6; }
-
+        .legend { margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85em; color: #475569; }
+        .dot { width: 14px; height: 14px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>🌴 Planer Urlopowy 2026</h1>
-        <p>Zaplanuj swój wymarzony wypoczynek</p>
-    </header>
+<div class="calendar-container" id="calendar"></div>
 
-    <div class="card">
-        <h2>📍 Gdzie i kiedy?</h2>
-        <div class="input-group">
-            <input type="text" id="destination" placeholder="Dokąd jedziesz?">
-            <input type="date" id="travelDate">
-            <button onclick="addTrip()">Dodaj wyjazd</button>
-        </div>
-        <div id="tripList"></div>
+<div class="sidebar">
+    <h2>📅 Szczegóły dnia</h2>
+    <div id="selected-date-label" style="font-weight: bold; color: var(--primary); margin-bottom: 10px;">Wybierz datę z kalendarza</div>
+    
+    <div id="holiday-name" class="info-holiday"></div>
+
+    <div id="editor-ui">
+        <label>Typ urlopu:</label>
+        <select id="leave-type">
+            <option value="">Pracujący / Brak</option>
+            <option value="wypoczynkowy">Urlop wypoczynkowy</option>
+            <option value="l4">Zwolnienie lekarskie (L4)</option>
+            <option value="zadanie">Urlop na żądanie</option>
+            <option value="okolicznosciowy">Urlop okolicznościowy</option>
+        </select>
+        
+        <label>Twoje uwagi:</label>
+        <textarea id="notes" rows="3" placeholder="Gdzie jedziesz? Co robisz?"></textarea>
+        <button class="btn-save" onclick="saveDay()">Zapisz w kalendarzu</button>
     </div>
 
-    <div class="card">
-        <h2>✅ Lista do zrobienia</h2>
-        <div class="input-group">
-            <input type="text" id="todoInput" placeholder="Np. kupić krem z filtrem" style="grid-column: span 2;">
-            <button onclick="addTodo()">Dodaj</button>
-        </div>
-        <div id="todoList"></div>
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background: var(--swieto); border: 1px solid #fca5a5;"></div> Święto ustawowe (Wolne!)</div>
+        <div class="legend-item"><div class="dot" style="background: var(--wypoczynkowy)"></div> Wypoczynkowy</div>
+        <div class="legend-item"><div class="dot" style="background: var(--chorobowy)"></div> L4 / Chorobowe</div>
+        <div class="legend-item"><div class="dot" style="background: var(--zadanie)"></div> Na żądanie</div>
     </div>
 </div>
 
 <script>
-    // Inicjalizacja danych z LocalStorage
-    let trips = JSON.parse(localStorage.getItem('trips')) || [];
-    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+    const year = 2026;
+    
+    // Lista świąt w Polsce 2026
+    const holidays2026 = {
+        "2026-01-01": "Nowy Rok",
+        "2026-01-06": "Trzech Króli",
+        "2026-04-05": "Wielkanoc",
+        "2026-04-06": "Poniedziałek Wielkanocny",
+        "2026-05-01": "Święto Pracy",
+        "2026-05-03": "Święto Konstytucji 3 Maja",
+        "2026-05-24": "Zielone Świątki",
+        "2026-06-04": "Boże Ciało",
+        "2026-08-15": "Wniebowzięcie NMP",
+        "2026-11-01": "Wszystkich Świętych",
+        "2026-11-11": "Święto Niepodległości",
+        "2026-12-25": "Boże Narodzenie (Dzień 1)",
+        "2026-12-26": "Boże Narodzenie (Dzień 2)"
+    };
 
-    function render() {
-        // Render wycieczek
-        const tripList = document.getElementById('tripList');
-        tripList.innerHTML = trips.map((trip, index) => `
-            <div class="list-item">
-                <span><strong>${trip.place}</strong> - ${trip.date}</span>
-                <button class="delete-btn" onclick="deleteTrip(${index})">Usuń</button>
-            </div>
-        `).join('');
+    let calendarData = JSON.parse(localStorage.getItem('pl_planner_2026')) || {};
+    let currentSelectedDate = null;
 
-        // Render To-Do
-        const todoList = document.getElementById('todoList');
-        todoList.innerHTML = todos.map((todo, index) => `
-            <div class="list-item">
-                <div class="todo-item">
-                    <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${index})">
-                    <span class="${todo.done ? 'completed' : ''}">${todo.text}</span>
-                </div>
-                <button class="delete-btn" onclick="deleteTodo(${index})">Usuń</button>
-            </div>
-        `).join('');
+    const months = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+    const dayNames = ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"];
 
-        localStorage.setItem('trips', JSON.stringify(trips));
-        localStorage.setItem('todos', JSON.stringify(todos));
-    }
+    function initCalendar() {
+        const container = document.getElementById('calendar');
+        container.innerHTML = '';
 
-    function addTrip() {
-        const place = document.getElementById('destination').value;
-        const date = document.getElementById('travelDate').value;
-        if(place && date) {
-            trips.push({place, date});
-            document.getElementById('destination').value = '';
-            render();
+        for (let m = 0; m < 12; m++) {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'month';
+            monthDiv.innerHTML = `<div class="month-title">${months[m]}</div>`;
+            
+            const grid = document.createElement('div');
+            grid.className = 'days-grid';
+            dayNames.forEach(name => grid.innerHTML += `<div class="day-name">${name}</div>`);
+
+            const firstDay = new Date(year, m, 1).getDay();
+            const daysInMonth = new Date(year, m + 1, 0).getDate();
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+            for (let i = 0; i < startOffset; i++) grid.innerHTML += `<div class="day empty"></div>`;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateKey = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                dayDiv.innerText = d;
+                dayDiv.id = `day-${dateKey}`;
+                
+                if (holidays2026[dateKey]) {
+                    dayDiv.classList.add('is-holiday');
+                } else if (calendarData[dateKey]) {
+                    dayDiv.classList.add(`status-${calendarData[dateKey].type}`);
+                }
+
+                dayDiv.onclick = () => selectDay(dateKey);
+                grid.appendChild(dayDiv);
+            }
+            monthDiv.appendChild(grid);
+            container.appendChild(monthDiv);
         }
     }
 
-    function deleteTrip(index) {
-        trips.splice(index, 1);
-        render();
-    }
+    function selectDay(date) {
+        currentSelectedDate = date;
+        const holidayName = holidays2026[date];
+        const displayLabel = document.getElementById('selected-date-label');
+        const holidayInfo = document.getElementById('holiday-name');
+        const editorUI = document.getElementById('editor-ui');
 
-    function addTodo() {
-        const text = document.getElementById('todoInput').value;
-        if(text) {
-            todos.push({text, done: false});
-            document.getElementById('todoInput').value = '';
-            render();
+        displayLabel.innerText = `Data: ${date}`;
+        
+        if (holidayName) {
+            holidayInfo.innerText = `🎉 To święto: ${holidayName} (Wolne ustawowo)`;
+            holidayInfo.style.display = 'block';
+            editorUI.style.display = 'none'; // Ukryj edycję dla świąt
+        } else {
+            holidayInfo.style.display = 'none';
+            editorUI.style.display = 'block';
+            const data = calendarData[date] || { type: '', notes: '' };
+            document.getElementById('leave-type').value = data.type;
+            document.getElementById('notes').value = data.notes;
         }
+        
+        document.querySelectorAll('.day').forEach(el => el.style.boxShadow = 'none');
+        document.getElementById(`day-${date}`).style.boxShadow = '0 0 0 3px var(--primary)';
     }
 
-    function toggleTodo(index) {
-        todos[index].done = !todos[index].done;
-        render();
+    function saveDay() {
+        if (!currentSelectedDate) return;
+        const type = document.getElementById('leave-type').value;
+        const notes = document.getElementById('notes').value;
+
+        if (type === "") {
+            delete calendarData[currentSelectedDate];
+        } else {
+            calendarData[currentSelectedDate] = { type, notes };
+        }
+
+        localStorage.setItem('pl_planner_2026', JSON.stringify(calendarData));
+        initCalendar();
     }
 
-    function deleteTodo(index) {
-        todos.splice(index, 1);
-        render();
-    }
-
-    render(); // Pierwsze uruchomienie
+    initCalendar();
 </script>
 
 </body>
