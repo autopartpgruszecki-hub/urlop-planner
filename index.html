@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mój Planer Urlopowy</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --accent: #10b981;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 { border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .delete-btn { background-color: #ef4444; padding: 5px 10px; }
+
+        .todo-item { display: flex; align-items: center; gap: 10px; }
+        .completed { text-decoration: line-through; opacity: 0.6; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌴 Planer Urlopowy 2026</h1>
+        <p>Zaplanuj swój wymarzony wypoczynek</p>
+    </header>
+
+    <div class="card">
+        <h2>📍 Gdzie i kiedy?</h2>
+        <div class="input-group">
+            <input type="text" id="destination" placeholder="Dokąd jedziesz?">
+            <input type="date" id="travelDate">
+            <button onclick="addTrip()">Dodaj wyjazd</button>
+        </div>
+        <div id="tripList"></div>
+    </div>
+
+    <div class="card">
+        <h2>✅ Lista do zrobienia</h2>
+        <div class="input-group">
+            <input type="text" id="todoInput" placeholder="Np. kupić krem z filtrem" style="grid-column: span 2;">
+            <button onclick="addTodo()">Dodaj</button>
+        </div>
+        <div id="todoList"></div>
+    </div>
+</div>
+
+<script>
+    // Inicjalizacja danych z LocalStorage
+    let trips = JSON.parse(localStorage.getItem('trips')) || [];
+    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+    function render() {
+        // Render wycieczek
+        const tripList = document.getElementById('tripList');
+        tripList.innerHTML = trips.map((trip, index) => `
+            <div class="list-item">
+                <span><strong>${trip.place}</strong> - ${trip.date}</span>
+                <button class="delete-btn" onclick="deleteTrip(${index})">Usuń</button>
+            </div>
+        `).join('');
+
+        // Render To-Do
+        const todoList = document.getElementById('todoList');
+        todoList.innerHTML = todos.map((todo, index) => `
+            <div class="list-item">
+                <div class="todo-item">
+                    <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${index})">
+                    <span class="${todo.done ? 'completed' : ''}">${todo.text}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteTodo(${index})">Usuń</button>
+            </div>
+        `).join('');
+
+        localStorage.setItem('trips', JSON.stringify(trips));
+        localStorage.setItem('todos', JSON.stringify(todos));
+    }
+
+    function addTrip() {
+        const place = document.getElementById('destination').value;
+        const date = document.getElementById('travelDate').value;
+        if(place && date) {
+            trips.push({place, date});
+            document.getElementById('destination').value = '';
+            render();
+        }
+    }
+
+    function deleteTrip(index) {
+        trips.splice(index, 1);
+        render();
+    }
+
+    function addTodo() {
+        const text = document.getElementById('todoInput').value;
+        if(text) {
+            todos.push({text, done: false});
+            document.getElementById('todoInput').value = '';
+            render();
+        }
+    }
+
+    function toggleTodo(index) {
+        todos[index].done = !todos[index].done;
+        render();
+    }
+
+    function deleteTodo(index) {
+        todos.splice(index, 1);
+        render();
+    }
+
+    render(); // Pierwsze uruchomienie
+</script>
+
+</body>
+</html>
